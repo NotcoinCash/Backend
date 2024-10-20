@@ -1,0 +1,23 @@
+services:
+  backend:
+    build: .
+    container_name: ncc_backend 
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env.dev
+    restart: always
+
+  db:
+    image: postgres:17.0-alpine3.20
+    container_name: postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env.dev
+    restart: always
+
+volumes:
+  postgres_data:

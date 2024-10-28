@@ -39,6 +39,8 @@ class Task(Base):
     icon: Mapped[str] = mapped_column()
     reward: Mapped[int] = mapped_column()
 
+    users: Mapped[List["User"]] = relationship(secondary=users_tasks, back_populates="tasks")
+
 
 class Boost(Base):
     __tablename__ = "boost"

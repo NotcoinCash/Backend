@@ -10,6 +10,8 @@ asyncpg = "*"
 alembic = "*"
 sqlalchemy = "*"
 pydantic-settings = "*"
+sqladmin = {extras = ["full"], version = "*"}
+itsdangerous = "*"
 
 [dev-packages]
 uvicorn = "*"

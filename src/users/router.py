@@ -11,7 +11,7 @@ from src.users.schemas import UserGetScheme, UserCreateScheme
 router = APIRouter(
     prefix="/users",
     tags=["Users"],
-    # dependencies=[Depends(check_auth_header)],
+    dependencies=[Depends(check_auth_header)],
     responses={404: {"description": "Not found"}},
 )
 

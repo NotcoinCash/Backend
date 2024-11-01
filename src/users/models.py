@@ -24,7 +24,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
 
     referrer_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("user.id"))
-    referrals: Mapped[Optional["User"]] = relationship(back_populates="referrer")
+    referrals: Mapped[List["User"]] = relationship(back_populates="referrer")
     referrer: Mapped[Optional["User"]] = relationship(back_populates="referrals", remote_side=[id])
 
     tasks: Mapped[List["Task"]] = relationship(secondary=users_tasks, back_populates="users")

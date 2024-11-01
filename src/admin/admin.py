@@ -18,11 +18,20 @@ def init_admin(app):
     class UserAdmin(ModelView, model=User):
         column_list = [User.id, User.joined_at, User.is_active]
 
+        # can_edit = False
+        # can_delete = False
+
     class TaskAdmin(ModelView, model=Task):
         column_list = [Task.id, Task.name]
 
+        # can_edit = False
+        # can_delete = False
+
     class BoostAdmin(ModelView, model=Boost):
         column_list = [Boost.id, Boost.name]
+
+        # can_edit = False
+        # can_delete = False
 
     admin.add_view(UserAdmin)
     admin.add_view(TaskAdmin)

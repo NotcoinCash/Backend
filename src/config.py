@@ -14,6 +14,8 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str
 
+    TELEGRAM_BOT_TOKEN: str
+
     @property
     def DATABASE_URL_asyncpg(self):
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

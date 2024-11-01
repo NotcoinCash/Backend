@@ -9,7 +9,7 @@ async_engine = create_async_engine(
     # max_overflow=10,
 )
 
-session_factory = async_sessionmaker(async_engine)
+async_session_factory = async_sessionmaker(async_engine)
 
 
 class Base(DeclarativeBase):

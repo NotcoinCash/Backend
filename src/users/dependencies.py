@@ -7,8 +7,11 @@ from fastapi import Header, HTTPException
 
 
 async def check_auth_header(Authentication: Annotated[str, Header()]):
-    init_data = Authentication.split("\n")[1]
-    init_data = parse_qs(init_data)
+    init_data = Authentication.split(" ")
+    if len(init_data) != 2:
+        raise HTTPException(status_code=400, detail="Invalid Authentication header")
+
+    init_data = parse_qs(init_data[1])
 
     bot_token = init_data.get('bot', [None])[0]
     if not bot_token:

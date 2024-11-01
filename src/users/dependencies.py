@@ -5,6 +5,8 @@ from urllib.parse import parse_qs
 
 from fastapi import Header, HTTPException
 
+from src.config import settings
+
 
 async def check_auth_header(Authentication: Annotated[str, Header()]):
     init_data = Authentication.split(" ")
@@ -13,7 +15,7 @@ async def check_auth_header(Authentication: Annotated[str, Header()]):
 
     init_data = parse_qs(init_data[1])
 
-    bot_token = init_data.get('bot', [None])[0]
+    bot_token = settings.TELEGRAM_BOT_TOKEN
     if not bot_token:
         raise HTTPException(status_code=500, detail="Bot token is not set")
 

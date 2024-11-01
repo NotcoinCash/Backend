@@ -6,7 +6,7 @@ from sqlalchemy import select
 from src.database import async_session_factory
 from src.users.dependencies import check_auth_header
 from src.users.models import User
-from src.users.schemas import UserScheme
+from src.users.schemas import UserGetScheme, UserCreateScheme
 
 router = APIRouter(
     prefix="/users",
@@ -17,7 +17,7 @@ router = APIRouter(
 
 
 @router.post("/")
-async def create_user(new_user_data: UserScheme, referrer_id: Optional[int] = None):
+async def create_user(new_user_data: UserCreateScheme, referrer_id: Optional[int] = None):
     async with async_session_factory() as session:
         existing_user = await session.execute(
             select(User).where(User.id == new_user_data.id)
@@ -41,11 +41,12 @@ async def create_user(new_user_data: UserScheme, referrer_id: Optional[int] = No
 
         session.add(new_user)
         await session.commit()
+        await session.refresh(new_user)
 
         return {
             "status": "success",
             "message": "User successfully created",
-            "data": {"user": UserScheme.model_validate(new_user).model_dump()}
+            "data": {"user": UserGetScheme.model_validate(new_user).model_dump()}
         }
 
 
@@ -64,7 +65,7 @@ async def get_user(user_id: int):
 
         return {
             "status": "success",
-            "data": {"user": UserScheme.model_validate(user).model_dump()}
+            "data": {"user": UserGetScheme.model_validate(user).model_dump()}
         }
 
 

@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import time
 from typing import Annotated
 from urllib.parse import parse_qs
@@ -37,9 +38,10 @@ async def check_auth_header(Authentication: Annotated[str, Header()]):
         raise HTTPException(status_code=400, detail="Telegram data is older than 5 minutes")
 
     data_check_string = "\n".join(f"{key}={value[0]}" for key, value in sorted(init_data.items()))
-    secret_key = utils.hmac_sha256(settings.SECRET_KEY, "WebAppData")
 
-    calculated_hash = utils.hmac_sha256(data_check_string, secret_key)
+    secret_key = hmac.new("WebAppData".encode(), bot_token.encode(), hashlib.sha256).digest()
+    calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+
     print('\n'*5)
     print(data_check_string)
 

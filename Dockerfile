@@ -14,4 +14,4 @@ RUN jq -r '.default | to_entries[] | .key + .value.version ' Pipfile.lock > requ
 
 COPY . .
 
-CMD ["sh", "-c", "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000 --forwarded-allow-ips '*'"]

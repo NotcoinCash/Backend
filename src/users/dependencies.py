@@ -7,7 +7,6 @@ from urllib.parse import parse_qs
 from fastapi import Header, HTTPException
 
 from src.config import settings
-from src.users import utils
 
 
 async def check_auth_header(Authentication: Annotated[str, Header()]):
@@ -35,19 +34,16 @@ async def check_auth_header(Authentication: Annotated[str, Header()]):
     time_difference = current_timestamp - auth_timestamp
     five_minutes_in_seconds = 5 * 60
     if time_difference > five_minutes_in_seconds:
-        raise HTTPException(status_code=400, detail="Telegram data is older than 5 minutes")
+        # raise HTTPException(status_code=400, detail="Telegram data is older than 5 minutes")
+        pass
 
     data_check_string = "\n".join(f"{key}={value[0]}" for key, value in sorted(init_data.items()))
 
     secret_key = hmac.new("WebAppData".encode(), bot_token.encode(), hashlib.sha256).digest()
     calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
 
-    print('\n'*5)
-    print(data_check_string)
-
-    print(secret_key)
-    print(calculated_hash)
-    print('\n' * 5)
-
     if calculated_hash != hash_value:
         raise HTTPException(status_code=400, detail="Invalid hash")
+
+    telegram_id = init_data.get('id', None)
+    return telegram_id

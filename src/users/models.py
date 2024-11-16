@@ -18,6 +18,7 @@ class User(Base):
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)  # Telegram user id
+    username: Mapped[str] = mapped_column(String(50))  # Telegram username
     balance: Mapped[int] = mapped_column(default=0)
     boosts_info: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
     joined_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -46,10 +47,10 @@ class Boost(Base):
     __tablename__ = "boost"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(50))
+    name: Mapped[str] = mapped_column(String(50), unique=True)
     description: Mapped[Optional[str]] = mapped_column(String(256))
     base_cost: Mapped[int] = mapped_column()
-    cost_per_level: Mapped[Union[int, float]] = mapped_column(Numeric)
+    cost_per_level: Mapped[int] = mapped_column()
     base_value: Mapped[int] = mapped_column()
     value_per_level: Mapped[int] = mapped_column()
     max_level: Mapped[int] = mapped_column()

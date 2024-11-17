@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
 
+    BOOST_TAP_NAME: str
+    BOOST_MAXIMIZER_NAME: str
+    BOOST_CHARGER_NAME: str
+
     ADMIN_AUTH_TOKEN: str
     ADMIN_USERNAME: str
     ADMIN_PASSWORD: str

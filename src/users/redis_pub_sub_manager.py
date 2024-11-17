@@ -2,6 +2,8 @@ import os
 
 import redis.asyncio as aioredis
 
+from src.config import settings
+
 
 class RedisPubSubManager:
     """
@@ -12,7 +14,7 @@ class RedisPubSubManager:
         port (int): Redis server port.
     """
 
-    def __init__(self, host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT')):
+    def __init__(self, host=settings.REDIS_HOST, port=settings.REDIS_PORT):
         self.redis_host = host
         self.redis_port = port
         self.pubsub = None

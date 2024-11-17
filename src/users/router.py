@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
+from src.config import settings
 from src.database import async_session_factory
 from src.users.dependencies import check_auth_header
 from src.users.models import User, Boost, Task, users_tasks
@@ -335,9 +336,9 @@ async def websocket_mining_tokens(websocket: WebSocket, user_id: int, telegram_i
         await websocket.close()
 
     room_id = f"user_{user_id}"
-    user_maximizer_boost = user.boosts_info.get("Maximizer", {})
-    user_charger_boost = user.boosts_info.get("Charger", {})
-    user_tap_boost = user.boosts_info.get("Tap", {})
+    user_maximizer_boost = user.boosts_info.get(settings.BOOST_MAXIMIZER_NAME, {})
+    user_charger_boost = user.boosts_info.get(settings.BOOST_CHARGER_NAME, {})
+    user_tap_boost = user.boosts_info.get(settings.BOOST_TAP_NAME, {})
     user_energy = user_maximizer_boost.get("base_value", 0) + (user_maximizer_boost.get('value_per_level', 0) * (user_maximizer_boost.get("level", 1) - 1))
     user_charger_speed = user_charger_boost.get("base_value", 0) + (user_charger_boost.get('value_per_level', 0) * (user_charger_boost.get("level", 1) - 1))
     user_tap_count = user_tap_boost.get("base_value", 0) + (user_tap_boost.get('value_per_level', 0) * (user_tap_boost.get("level", 1) - 1))

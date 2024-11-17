@@ -9,6 +9,7 @@ from alembic import context
 
 from src.config import settings
 from src.users.models import *  # noqa
+from src.models import *  # noqa
 from src.database import Base
 
 # this is the Alembic Config object, which provides

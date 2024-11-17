@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import async_session
 
 from src.admin.admin import init_admin
+from src.models import Token
 from src.users.router import router as users_router
 
 app = FastAPI()
@@ -22,6 +25,25 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-def index():
-    return {"Hello": "World"}
+@app.get("/token")
+async def get_token_info():
+    async with async_session() as session:
+        result = await session.execute(select(Token).limit(1))
+        token = result.scalars().first()
+        if token is None:
+            return {"status": "error", "message": "Token info is not set"}
+
+    return {
+        "status": "success",
+        "message": "Token info is fetched successfully",
+        "data": {
+            "total_supply": token.total_supply,
+            "total_supply_percent": 100,
+            "developers": token.developers,
+            "developers_percent": (token.developers / token.total_supply) * 100,
+            "community": token.community,
+            "community_percent": (token.community / token.total_supply) * 100,
+            "mined": token.mined,
+            "mined_percent": (token.mined / token.total_supply) * 100,
+        }
+    }

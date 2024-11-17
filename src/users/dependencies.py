@@ -32,10 +32,9 @@ async def check_auth_header(Authentication: Annotated[str, Header()]):
     auth_timestamp = int(auth_date)
     current_timestamp = int(time.time())
     time_difference = current_timestamp - auth_timestamp
-    five_minutes_in_seconds = 5 * 60
-    if time_difference > five_minutes_in_seconds:
-        # raise HTTPException(status_code=400, detail="Telegram data is older than 5 minutes")
-        pass
+    one_hour = 60 * 60
+    if time_difference > one_hour:
+        raise HTTPException(status_code=400, detail="Telegram data is older than 5 minutes")
 
     data_check_string = "\n".join(f"{key}={value[0]}" for key, value in sorted(init_data.items()))
 

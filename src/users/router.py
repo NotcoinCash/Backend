@@ -43,7 +43,7 @@ async def get_user_friends(user_id: int, user_telegram_id: int = Depends(check_a
         return {
             "status": "success",
             "message": "User found, referrals fetched",
-            "data": {"referrals": [ReferralsGetScheme.model_validate(referral).model_dump() for referral in referrals]}
+            "data": {"user_id": user.id, "referrals": [ReferralsGetScheme.model_validate(referral).model_dump() for referral in referrals]}
         }
 
 
@@ -84,6 +84,7 @@ async def get_user_tasks(user_id: int, user_telegram_id: int = Depends(check_aut
             "status": "success",
             "message": "User found, tasks fetched",
             "data": {
+                "user_id": user.id,
                 "completed_tasks": [
                     TasksGetScheme.model_validate(task).model_dump() for task in completed_tasks
                 ],
@@ -251,7 +252,7 @@ async def update_user_boosts_info(update_info: UpdateUserBoostsInfoScheme, user_
         return {
             "status": "success",
             "message": "Boosts info updated",
-            "data": {"user": UserGetScheme.model_validate(user).model_dump()}
+            "data": {"user_id": user.id, "boost_name": boost.name, "level": update_info.boost_level, "balance": user.balance}
         }
 
 
@@ -304,7 +305,7 @@ async def update_user_tasks(update_info: UpdateUserTasksScheme, user_telegram_id
         return {
             "status": "success",
             "message": "User tasks updated",
-            "data": {"user_id": user.id, "tasks_id": task.id}
+            "data": {"user_id": user.id, "tasks_id": task.id, "balance": user.balance, "reward": task.reward}
         }
 
 

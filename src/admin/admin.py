@@ -3,6 +3,7 @@ from sqladmin import Admin, ModelView
 from src.admin.auth import AdminAuth
 from src.config import settings
 from src.database import async_engine
+from src.models import Token
 from src.users.models import User, Boost, Task
 
 authentication_backend = AdminAuth(secret_key=settings.SECRET_KEY)
@@ -29,6 +30,12 @@ def init_admin(app):
 
     class BoostAdmin(ModelView, model=Boost):
         column_list = [Boost.id, Boost.name]
+
+        # can_edit = False
+        # can_delete = False
+
+    class TokenAdmin(ModelView, model=Token):
+        column_list = [Token.id, Token.total_supply, Token.developers, Token.community, Token.mined]
 
         # can_edit = False
         # can_delete = False

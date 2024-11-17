@@ -164,7 +164,7 @@ async def create_user(new_user_data: UserCreateScheme, user_telegram_id: int = D
                 "message": "User already exists"
             }
 
-        new_user = User(id=new_user_data.id)
+        new_user = User(id=new_user_data.id, username=new_user_data.username)
 
         if referrer_id:
             referrer = await session.execute(

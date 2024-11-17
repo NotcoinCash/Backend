@@ -8,7 +8,7 @@ from src.models import Token
 from src.users.router import router as users_router
 
 app = FastAPI()
-app.include_router(users_router)
+app.include_router(users_router, prefix="/api")
 init_admin(app)
 
 # origins = [

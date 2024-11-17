@@ -40,6 +40,7 @@ def init_admin(app):
         # can_edit = False
         # can_delete = False
 
+    admin.add_view(TokenAdmin)
     admin.add_view(UserAdmin)
     admin.add_view(TaskAdmin)
     admin.add_view(BoostAdmin)

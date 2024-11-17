@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_session
 
 from src.admin.admin import init_admin
+from src.database import async_session_factory
 from src.models import Token
 from src.users.router import router as users_router
 
@@ -27,7 +27,7 @@ app.add_middleware(
 
 @app.get("/token")
 async def get_token_info():
-    async with async_session() as session:
+    async with async_session_factory() as session:
         result = await session.execute(select(Token).limit(1))
         token = result.scalars().first()
         if token is None:

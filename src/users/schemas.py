@@ -60,6 +60,11 @@ class UpdateUserTasksScheme(BaseModel):
     task_id: int
 
 
+class UpdateUserBalanceScheme(BaseModel):
+    user_id: int
+    tokens: int
+
+
 class WebSocketMiningTokensMessageScheme(BaseModel):
     tokens: PositiveInt
 

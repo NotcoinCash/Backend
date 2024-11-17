@@ -11,7 +11,7 @@ from src.database import async_session_factory
 from src.users.dependencies import check_auth_header
 from src.users.models import User, Boost, Task, users_tasks
 from src.users.schemas import UserGetScheme, UserCreateScheme, ReferralsGetScheme, TasksGetScheme, \
-    UpdateUserBoostsInfoScheme, UpdateUserTasksScheme, WebSocketMiningTokensMessageScheme
+    UpdateUserBoostsInfoScheme, UpdateUserTasksScheme, WebSocketMiningTokensMessageScheme, UpdateUserBalanceScheme
 from src.users.websocket_manager import WebSocketManager
 
 router = APIRouter(
@@ -316,68 +316,103 @@ async def update_user_tasks(update_info: UpdateUserTasksScheme, user_telegram_id
         }
 
 
-socket_manager = WebSocketManager()
+@router.patch("/update-user-balance")
+async def update_user_balance(update_info: UpdateUserBalanceScheme, user_telegram_id: int = Depends(check_auth_header)):
+    # if user_id != user_telegram_id:
+    #     return {
+    #         "status": "error",
+    #         "message": "Telegram id does not match"
+    #     }
+
+    async with async_session_factory() as session:
+        user = await session.execute(
+            select(User).where(User.id == update_info.user_id)
+        )
+        user = user.scalar()
+        if not user:
+            return {
+                "status": "error",
+                "message": "User not found"
+            }
+
+        user.balance += update_info.tokens
+
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+
+        return {
+            "status": "success",
+            "message": "User balance updated",
+            "data": {"user_id": user.id, "balance": user.balance}
+        }
 
 
-@router.websocket("/{user_id}")
-async def websocket_mining_tokens(websocket: WebSocket, user_id: int, user_telegram_id: int = Depends(check_auth_header)):
+# socket_manager = WebSocketManager()
+
+
+# @router.websocket("/{user_id}")
+# async def websocket_mining_tokens(websocket: WebSocket, user_id: int, user_telegram_id: int = Depends(check_auth_header)):
+#     await websocket.accept()
+
     # if user_id != user_telegram_id:
     #     await websocket.send_text(json.dumps({"status": "error", "message": "Telegram id does not match"}))
     #     await websocket.close()
 
-    async with async_session_factory() as session:
-        user = await session.execute(
-            select(User).where(User.id == user_id)
-        )
-        user = user.scalar()
-
-    if not user:
-        await websocket.close(code=1008, reason="User not found")
-        return
-
-    room_id = f"user_{user_id}"
-    user_maximizer_boost = user.boosts_info.get(settings.BOOST_MAXIMIZER_NAME, {})
-    user_charger_boost = user.boosts_info.get(settings.BOOST_CHARGER_NAME, {})
-    user_tap_boost = user.boosts_info.get(settings.BOOST_TAP_NAME, {})
-    user_energy = user_maximizer_boost.get("base_value", 0) + (user_maximizer_boost.get('value_per_level', 0) * (user_maximizer_boost.get("level", 1) - 1))
-    user_charger_speed = user_charger_boost.get("base_value", 0) + (user_charger_boost.get('value_per_level', 0) * (user_charger_boost.get("level", 1) - 1))
-    user_tap_count = user_tap_boost.get("base_value", 0) + (user_tap_boost.get('value_per_level', 0) * (user_tap_boost.get("level", 1) - 1))
-
-    await socket_manager.add_user_to_room(room_id, websocket)
-    message = {
-        "user_id": user_id,
-        "room_id": room_id,
-        "message": f"User {user_id} connected to room - {room_id}"
-    }
-    await socket_manager.broadcast_to_room(room_id, json.dumps(message))
-    try:
-        time_now = datetime.datetime.now()
-        while True:
-            data = WebSocketMiningTokensMessageScheme.model_validate(json.loads(await websocket.receive_text()))
-
-            used_energy = data.tokens // user_tap_count
-            if user_energy >= used_energy:
-                user.balance += data.tokens
-                user_energy -= used_energy
-                if (datetime.datetime.now() - time_now).total_seconds() > 1:
-                    user_energy += user_charger_speed
-                    time_now = datetime.datetime.now()
-            else:
-                user_energy = 0
-
-            message = {
-                "user_id": user_id,
-                "user_balance": user.balance,
-                "user_energy": user_energy,
-            }
-            await socket_manager.broadcast_to_room(room_id, json.dumps(message))
-
-    except WebSocketDisconnect:
-        await socket_manager.remove_user_from_room(room_id, websocket)
-
-        message = {
-            "user_id": user_id,
-            "room_id": room_id,
-            "message": f"User {user_id} disconnected from room - {room_id}"
-        }
-        await socket_manager.broadcast_to_room(room_id, json.dumps(message))
+    # async with async_session_factory() as session:
+    #     user = await session.execute(
+    #         select(User).where(User.id == user_id)
+    #     )
+    #     user = user.scalar()
+    #
+    # if not user:
+    #     await websocket.send_text(json.dumps({"status": "error", "message": "User not found"}))
+    #     await websocket.close()
+    #     return
+    #
+    # room_id = f"user_{user_id}"
+    # user_maximizer_boost = user.boosts_info.get(settings.BOOST_MAXIMIZER_NAME, {})
+    # user_charger_boost = user.boosts_info.get(settings.BOOST_CHARGER_NAME, {})
+    # user_tap_boost = user.boosts_info.get(settings.BOOST_TAP_NAME, {})
+    # user_energy = user_maximizer_boost.get("base_value", 0) + (user_maximizer_boost.get('value_per_level', 0) * (user_maximizer_boost.get("level", 1) - 1))
+    # user_charger_speed = user_charger_boost.get("base_value", 0) + (user_charger_boost.get('value_per_level', 0) * (user_charger_boost.get("level", 1) - 1))
+    # user_tap_count = user_tap_boost.get("base_value", 0) + (user_tap_boost.get('value_per_level', 0) * (user_tap_boost.get("level", 1) - 1))
+    #
+    # await socket_manager.add_user_to_room(room_id, websocket)
+    # message = {
+    #     "user_id": user_id,
+    #     "room_id": room_id,
+    #     "message": f"User {user_id} connected to room - {room_id}"
+    # }
+    # await socket_manager.broadcast_to_room(room_id, json.dumps(message))
+    # try:
+    #     time_now = datetime.datetime.now()
+    #     while True:
+    #         data = WebSocketMiningTokensMessageScheme.model_validate(json.loads(await websocket.receive_text()))
+    #
+    #         used_energy = data.tokens // user_tap_count
+    #         if user_energy >= used_energy:
+    #             user.balance += data.tokens
+    #             user_energy -= used_energy
+    #             if (datetime.datetime.now() - time_now).total_seconds() > 1:
+    #                 user_energy += user_charger_speed
+    #                 time_now = datetime.datetime.now()
+    #         else:
+    #             user_energy = 0
+    #
+    #         message = {
+    #             "user_id": user_id,
+    #             "user_balance": user.balance,
+    #             "user_energy": user_energy,
+    #         }
+    #         await socket_manager.broadcast_to_room(room_id, json.dumps(message))
+    #
+    # except WebSocketDisconnect:
+    #     await socket_manager.remove_user_from_room(room_id, websocket)
+    #
+    #     message = {
+    #         "user_id": user_id,
+    #         "room_id": room_id,
+    #         "message": f"User {user_id} disconnected from room - {room_id}"
+    #     }
+    #     await socket_manager.broadcast_to_room(room_id, json.dumps(message))

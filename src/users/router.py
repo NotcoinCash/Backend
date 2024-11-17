@@ -291,6 +291,7 @@ async def update_user_tasks(update_info: UpdateUserTasksScheme, user_telegram_id
                 "status": "error",
                 "message": f"Task with id {update_info.task_id} not found"
             }
+
         user_tasks = await session.execute(
             select(users_tasks).where(users_tasks.c.user_id == user.id)
         )
@@ -302,8 +303,14 @@ async def update_user_tasks(update_info: UpdateUserTasksScheme, user_telegram_id
                 "message": "Task already completed"
             }
 
-        user.tasks.append(task)
+        await session.execute(users_tasks.insert().values(user_id=user.id, task_id=task.id))
+
         user.balance += task.reward
+
+        user_id = user.id
+        task_id = task.id
+        user_balance = user.balance
+        reward = task.reward
 
         session.add(user)
         await session.commit()
@@ -312,7 +319,7 @@ async def update_user_tasks(update_info: UpdateUserTasksScheme, user_telegram_id
         return {
             "status": "success",
             "message": "User tasks updated",
-            "data": {"user_id": user.id, "tasks_id": task.id, "balance": user.balance, "reward": task.reward}
+            "data": {"user_id": user_id, "tasks_id": task_id, "balance": user_balance, "reward": reward}
         }
 
 

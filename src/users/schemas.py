@@ -20,7 +20,7 @@ class UserGetScheme(BaseModel):
     username: str
     photo: Optional[str] = None
     balance: int = 0
-    boosts_info: Optional[dict] = {}
+    boosts_info: List[UserGetBoostsScheme]
     joined_at: datetime = None
     is_active: bool = True
 

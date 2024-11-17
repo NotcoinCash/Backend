@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
 
 
@@ -20,7 +20,7 @@ class UserGetScheme(BaseModel):
     username: str
     photo: Optional[str] = None
     balance: int = 0
-    boosts_info: List[UserGetBoostsScheme]
+    boosts_info: Dict[str, UserGetBoostsScheme]
     joined_at: datetime = None
     is_active: bool = True
 

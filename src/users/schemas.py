@@ -33,6 +33,7 @@ class ReferralsGetScheme(BaseModel):
 class TasksGetScheme(BaseModel):
     id: int
     name: str
+    url: str
     description: Optional[str] = None
     icon: str
     reward: int

@@ -292,12 +292,14 @@ async def update_user_tasks(update_info: UpdateUserTasksScheme, user_telegram_id
                 "message": f"Task with id {update_info.task_id} not found"
             }
 
-        user_tasks = await session.execute(
-            select(users_tasks).where(users_tasks.c.user_id == user.id)
+        task_already_completed = await session.execute(
+            select(users_tasks)
+            .where(users_tasks.c.user_id == user.id)
+            .where(users_tasks.c.task_id == task.id)
         )
-        user_tasks = user_tasks.scalars().all()
+        task_already_completed = task_already_completed.scalar() is not None
 
-        if task in user_tasks:
+        if task_already_completed:
             return {
                 "status": "error",
                 "message": "Task already completed"

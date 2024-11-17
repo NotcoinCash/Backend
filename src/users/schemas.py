@@ -6,11 +6,13 @@ from datetime import datetime
 class UserCreateScheme(BaseModel):
     id: int
     username: str
+    photo: Optional[str] = None
 
 
 class UserGetScheme(BaseModel):
     id: int
     username: str
+    photo: Optional[str] = None
     balance: int = 0
     boosts_info: Optional[dict] = {}
     joined_at: datetime = None
@@ -22,10 +24,9 @@ class UserGetScheme(BaseModel):
 class ReferralsGetScheme(BaseModel):
     id: int
     username: str
+    photo: Optional[str] = None
     balance: int = 0
     joined_at: datetime = None
-    is_active: bool = True
-    referrer_id: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
 

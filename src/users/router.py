@@ -75,8 +75,8 @@ async def get_user_tasks(user_id: int, user_telegram_id: int = Depends(check_aut
 
         uncompleted_tasks = await session.execute(
             select(Task)
-            .outerjoin(users_tasks)
-            .where(users_tasks.c.user_id != user_id)
+            .outerjoin(users_tasks, (users_tasks.c.task_id == Task.id) & (users_tasks.c.user_id == user_id))
+            .where(users_tasks.c.user_id == None)
         )
         uncompleted_tasks = uncompleted_tasks.scalars().all()
 

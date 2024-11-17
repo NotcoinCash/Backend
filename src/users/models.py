@@ -19,6 +19,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)  # Telegram user id
     username: Mapped[str] = mapped_column(String(50))  # Telegram username
+    photo: Mapped[Optional[str]] = mapped_column(String(256))
     balance: Mapped[int] = mapped_column(default=0)
     boosts_info: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
     joined_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())

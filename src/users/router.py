@@ -320,8 +320,8 @@ socket_manager = WebSocketManager()
 
 
 @router.websocket("/{user_id}")
-async def websocket_mining_tokens(websocket: WebSocket, user_id: int, telegram_id: int = Depends(check_auth_header)):
-    # if user_id != telegram_id:
+async def websocket_mining_tokens(websocket: WebSocket, user_id: int, user_telegram_id: int = Depends(check_auth_header)):
+    # if user_id != user_telegram_id:
     #     await websocket.send_text(json.dumps({"status": "error", "message": "Telegram id does not match"}))
     #     await websocket.close()
 
@@ -332,8 +332,8 @@ async def websocket_mining_tokens(websocket: WebSocket, user_id: int, telegram_i
         user = user.scalar()
 
     if not user:
-        await websocket.send_text(json.dumps({"status": "error", "message": "User not found"}))
-        await websocket.close()
+        await websocket.close(code=1008, reason="User not found")
+        return
 
     room_id = f"user_{user_id}"
     user_maximizer_boost = user.boosts_info.get(settings.BOOST_MAXIMIZER_NAME, {})

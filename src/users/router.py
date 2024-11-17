@@ -23,11 +23,11 @@ router = APIRouter(
 
 @router.get("/{user_id}/friends")
 async def get_user_friends(user_id: int, user_telegram_id: int = Depends(check_auth_header)):
-    # if user_id != user_telegram_id:
-    #     return {
-    #         "status": "error",
-    #         "message": "Telegram id does not match"
-    #     }
+    if user_id != user_telegram_id:
+        return {
+            "status": "error",
+            "message": "Telegram id does not match"
+        }
 
     async with async_session_factory() as session:
         result = await session.execute(
@@ -54,11 +54,11 @@ async def get_user_friends(user_id: int, user_telegram_id: int = Depends(check_a
 
 @router.get("/{user_id}/tasks")
 async def get_user_tasks(user_id: int, user_telegram_id: int = Depends(check_auth_header)):
-    # if user_id != user_telegram_id:
-    #     return {
-    #         "status": "error",
-    #         "message": "Telegram id does not match"
-    #     }
+    if user_id != user_telegram_id:
+        return {
+            "status": "error",
+            "message": "Telegram id does not match"
+        }
 
     async with async_session_factory() as session:
         user = await session.execute(
@@ -102,11 +102,11 @@ async def get_user_tasks(user_id: int, user_telegram_id: int = Depends(check_aut
 
 @router.get("/{user_id}/boosts")
 async def get_user_boosts(user_id: int, user_telegram_id: int = Depends(check_auth_header)):
-    # if user_id != user_telegram_id:
-    #     return {
-    #         "status": "error",
-    #         "message": "Telegram id does not match"
-    #     }
+    if user_id != user_telegram_id:
+        return {
+            "status": "error",
+            "message": "Telegram id does not match"
+        }
 
     async with async_session_factory() as session:
         user = await session.execute(
@@ -128,11 +128,11 @@ async def get_user_boosts(user_id: int, user_telegram_id: int = Depends(check_au
 
 @router.get("/{user_id}")
 async def get_user(user_id: int, user_telegram_id: int = Depends(check_auth_header)):
-    # if user_id != user_telegram_id:
-    #     return {
-    #         "status": "error",
-    #         "message": "Telegram id does not match"
-    #     }
+    if user_id != user_telegram_id:
+        return {
+            "status": "error",
+            "message": "Telegram id does not match"
+        }
     async with async_session_factory() as session:
         user = await session.execute(
             select(User).where(User.id == user_id)
@@ -153,11 +153,11 @@ async def get_user(user_id: int, user_telegram_id: int = Depends(check_auth_head
 
 @router.post("/")
 async def create_user(new_user_data: UserCreateScheme, user_telegram_id: int = Depends(check_auth_header)):
-    # if new_user_data.id != user_telegram_id:
-    #     return {
-    #         "status": "error",
-    #         "message": "Telegram id does not match"
-    #     }
+    if new_user_data.id != user_telegram_id:
+        return {
+            "status": "error",
+            "message": "Telegram id does not match"
+        }
     async with async_session_factory() as session:
         existing_user = await session.execute(
             select(User).where(User.id == new_user_data.id)
@@ -208,11 +208,11 @@ async def create_user(new_user_data: UserCreateScheme, user_telegram_id: int = D
 @router.patch("/update-boosts-info")
 async def update_user_boosts_info(update_info: UpdateUserBoostsInfoScheme,
                                   user_telegram_id: int = Depends(check_auth_header)):
-    # if update_info.user_id != user_telegram_id:
-    #     return {
-    #         "status": "error",
-    #         "message": "Telegram id does not match"
-    #     }
+    if update_info.user_id != user_telegram_id:
+        return {
+            "status": "error",
+            "message": "Telegram id does not match"
+        }
 
     async with async_session_factory() as session:
         user = await session.execute(
@@ -270,11 +270,11 @@ async def update_user_boosts_info(update_info: UpdateUserBoostsInfoScheme,
 
 @router.patch("/update-user-tasks")
 async def update_user_tasks(update_info: UpdateUserTasksScheme, user_telegram_id: int = Depends(check_auth_header)):
-    # if update_info.user_id != user_telegram_id:
-    #     return {
-    #         "status": "error",
-    #         "message": "Telegram id does not match"
-    #     }
+    if update_info.user_id != user_telegram_id:
+        return {
+            "status": "error",
+            "message": "Telegram id does not match"
+        }
 
     async with async_session_factory() as session:
         user = await session.execute(
@@ -332,11 +332,11 @@ async def update_user_tasks(update_info: UpdateUserTasksScheme, user_telegram_id
 
 @router.patch("/update-user-balance")
 async def update_user_balance(update_info: UpdateUserBalanceScheme, user_telegram_id: int = Depends(check_auth_header)):
-    # if user_id != user_telegram_id:
-    #     return {
-    #         "status": "error",
-    #         "message": "Telegram id does not match"
-    #     }
+    if update_info.user_id != user_telegram_id:
+        return {
+            "status": "error",
+            "message": "Telegram id does not match"
+        }
 
     async with async_session_factory() as session:
         user = await session.execute(

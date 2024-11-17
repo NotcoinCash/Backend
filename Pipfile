@@ -12,6 +12,7 @@ sqlalchemy = "*"
 pydantic-settings = "*"
 sqladmin = {extras = ["full"], version = "*"}
 itsdangerous = "*"
+redis = "*"
 
 [dev-packages]
 uvicorn = "*"

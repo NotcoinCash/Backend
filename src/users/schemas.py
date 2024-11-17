@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, PositiveInt
 from typing import List, Optional, Dict
 from datetime import datetime
 
@@ -7,6 +7,7 @@ class UserCreateScheme(BaseModel):
     id: int
     username: str
     photo: Optional[str] = None
+    referrer_id: Optional[int] = None
 
 
 class UserGetBoostsScheme(BaseModel):
@@ -57,3 +58,8 @@ class UpdateUserBoostsInfoScheme(BaseModel):
 class UpdateUserTasksScheme(BaseModel):
     user_id: int
     task_id: int
+
+
+class WebSocketMiningTokensMessageScheme(BaseModel):
+    tokens: PositiveInt
+

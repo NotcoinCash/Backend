@@ -1,6 +1,8 @@
+import datetime
+import json
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
@@ -8,7 +10,8 @@ from src.database import async_session_factory
 from src.users.dependencies import check_auth_header
 from src.users.models import User, Boost, Task, users_tasks
 from src.users.schemas import UserGetScheme, UserCreateScheme, ReferralsGetScheme, TasksGetScheme, \
-    UpdateUserBoostsInfoScheme, UpdateUserTasksScheme
+    UpdateUserBoostsInfoScheme, UpdateUserTasksScheme, WebSocketMiningTokensMessageScheme
+from src.users.websocket_manager import WebSocketManager
 
 router = APIRouter(
     prefix="/users",
@@ -43,7 +46,8 @@ async def get_user_friends(user_id: int, user_telegram_id: int = Depends(check_a
         return {
             "status": "success",
             "message": "User found, referrals fetched",
-            "data": {"user_id": user.id, "referrals": [ReferralsGetScheme.model_validate(referral).model_dump() for referral in referrals]}
+            "data": {"user_id": user.id,
+                     "referrals": [ReferralsGetScheme.model_validate(referral).model_dump() for referral in referrals]}
         }
 
 
@@ -147,7 +151,7 @@ async def get_user(user_id: int, user_telegram_id: int = Depends(check_auth_head
 
 
 @router.post("/")
-async def create_user(new_user_data: UserCreateScheme, user_telegram_id: int = Depends(check_auth_header), referrer_id: Optional[int] = None):
+async def create_user(new_user_data: UserCreateScheme, user_telegram_id: int = Depends(check_auth_header)):
     # if new_user_data.id != user_telegram_id:
     #     return {
     #         "status": "error",
@@ -166,9 +170,9 @@ async def create_user(new_user_data: UserCreateScheme, user_telegram_id: int = D
 
         new_user = User(id=new_user_data.id, username=new_user_data.username)
 
-        if referrer_id:
+        if new_user_data.referrer_id:
             referrer = await session.execute(
-                select(User).where(User.id == referrer_id)
+                select(User).where(User.id == new_user_data.referrer_id)
             )
             referrer = referrer.scalar()
             if referrer:
@@ -201,7 +205,8 @@ async def create_user(new_user_data: UserCreateScheme, user_telegram_id: int = D
 
 
 @router.patch("/update-boosts-info")
-async def update_user_boosts_info(update_info: UpdateUserBoostsInfoScheme, user_telegram_id: int = Depends(check_auth_header)):
+async def update_user_boosts_info(update_info: UpdateUserBoostsInfoScheme,
+                                  user_telegram_id: int = Depends(check_auth_header)):
     # if update_info.user_id != user_telegram_id:
     #     return {
     #         "status": "error",
@@ -252,7 +257,8 @@ async def update_user_boosts_info(update_info: UpdateUserBoostsInfoScheme, user_
         return {
             "status": "success",
             "message": "Boosts info updated",
-            "data": {"user_id": user.id, "boost_name": boost.name, "level": update_info.boost_level, "balance": user.balance}
+            "data": {"user_id": user.id, "boost_name": boost.name, "level": update_info.boost_level,
+                     "balance": user.balance}
         }
 
 
@@ -309,4 +315,68 @@ async def update_user_tasks(update_info: UpdateUserTasksScheme, user_telegram_id
         }
 
 
+socket_manager = WebSocketManager()
 
+
+@router.websocket("/{user_id}")
+async def websocket_mining_tokens(websocket: WebSocket, user_id: int, telegram_id: int = Depends(check_auth_header)):
+    # if user_id != telegram_id:
+    #     await websocket.send_text(json.dumps({"status": "error", "message": "Telegram id does not match"}))
+    #     await websocket.close()
+
+    async with async_session_factory() as session:
+        user = await session.execute(
+            select(User).where(User.id == user_id)
+        )
+        user = user.scalar()
+
+    if not user:
+        await websocket.send_text(json.dumps({"status": "error", "message": "User not found"}))
+        await websocket.close()
+
+    room_id = f"user_{user_id}"
+    user_maximizer_boost = user.boosts_info.get("Maximizer", {})
+    user_charger_boost = user.boosts_info.get("Charger", {})
+    user_tap_boost = user.boosts_info.get("Tap", {})
+    user_energy = user_maximizer_boost.get("base_value", 0) + (user_maximizer_boost.get('value_per_level', 0) * (user_maximizer_boost.get("level", 1) - 1))
+    user_charger_speed = user_charger_boost.get("base_value", 0) + (user_charger_boost.get('value_per_level', 0) * (user_charger_boost.get("level", 1) - 1))
+    user_tap_count = user_tap_boost.get("base_value", 0) + (user_tap_boost.get('value_per_level', 0) * (user_tap_boost.get("level", 1) - 1))
+
+    await socket_manager.add_user_to_room(room_id, websocket)
+    message = {
+        "user_id": user_id,
+        "room_id": room_id,
+        "message": f"User {user_id} connected to room - {room_id}"
+    }
+    await socket_manager.broadcast_to_room(room_id, json.dumps(message))
+    try:
+        time_now = datetime.datetime.now()
+        while True:
+            data = WebSocketMiningTokensMessageScheme.model_validate(json.loads(await websocket.receive_text()))
+
+            used_energy = data.tokens // user_tap_count
+            if user_energy >= used_energy:
+                user.balance += data.tokens
+                user_energy -= used_energy
+                if (datetime.datetime.now() - time_now).total_seconds() > 1:
+                    user_energy += user_charger_speed
+                    time_now = datetime.datetime.now()
+            else:
+                user_energy = 0
+
+            message = {
+                "user_id": user_id,
+                "user_balance": user.balance,
+                "user_energy": user_energy,
+            }
+            await socket_manager.broadcast_to_room(room_id, json.dumps(message))
+
+    except WebSocketDisconnect:
+        await socket_manager.remove_user_from_room(room_id, websocket)
+
+        message = {
+            "user_id": user_id,
+            "room_id": room_id,
+            "message": f"User {user_id} disconnected from room - {room_id}"
+        }
+        await socket_manager.broadcast_to_room(room_id, json.dumps(message))

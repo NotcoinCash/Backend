@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str
     POSTGRES_PORT: int
 
+    REDIS_HOST: str
+    REDIS_PORT: int
+
     ADMIN_AUTH_TOKEN: str
     ADMIN_USERNAME: str
     ADMIN_PASSWORD: str

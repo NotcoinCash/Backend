@@ -251,6 +251,11 @@ async def update_user_boosts_info(update_info: UpdateUserBoostsInfoScheme,
         user.boosts_info[boost.name]["level"] = update_info.boost_level
         user.balance -= update_cost
 
+        user_id = user.id
+        boost_name = boost.name
+        level = update_info.boost_level
+        balance = user.balance
+
         session.add(user)
         await session.commit()
         await session.refresh(user)
@@ -258,8 +263,8 @@ async def update_user_boosts_info(update_info: UpdateUserBoostsInfoScheme,
         return {
             "status": "success",
             "message": "Boosts info updated",
-            "data": {"user_id": user.id, "boost_name": boost.name, "level": update_info.boost_level,
-                     "balance": user.balance}
+            "data": {"user_id": user_id, "boost_name": boost_name, "level": level,
+                     "balance": balance}
         }
 
 

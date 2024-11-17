@@ -9,6 +9,12 @@ class UserCreateScheme(BaseModel):
     photo: Optional[str] = None
 
 
+class UserGetBoostsScheme(BaseModel):
+    level: int
+    base_value: int
+    value_per_level: int
+
+
 class UserGetScheme(BaseModel):
     id: int
     username: str
